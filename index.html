@@ -42,13 +42,11 @@
     </div>
 
     <div class="flex items-center space-x-2">
-      <!-- 同期ステータス -->
       <div class="flex items-center space-x-1.5 text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">
         <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
         <span id="syncText">同期済み</span>
       </div>
 
-      <!-- 設定アイコンボタン（SVGベクター） -->
       <button
         onclick="openSettingsModal()"
         title="設定"
@@ -86,17 +84,13 @@
 
     <!-- ==================== ページ1: 入力特化 ＆ 直近8枠 ==================== -->
     <section class="page-view flex flex-col justify-between bg-slate-50">
-      
-      <!-- 上半分: 優先度順 2列 × 4行 = 最大8枚のカラーカード -->
       <div class="p-3.5 flex-1 flex flex-col justify-start">
         <div class="flex items-center justify-between mb-2 px-0.5">
           <span class="text-[11px] font-semibold text-slate-500 tracking-wide uppercase">直近・優先タスク（最大8件）</span>
           <span class="text-[10px] text-slate-400">期日順 / 左スワイプで全件表示</span>
         </div>
 
-        <div id="priorityGrid" class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 min-h-[260px] max-h-[340px]">
-          <!-- JSで8枠を描画 -->
-        </div>
+        <div id="priorityGrid" class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 min-h-[260px] max-h-[340px]"></div>
       </div>
 
       <!-- 下半分: クイック入力フォーム -->
@@ -113,18 +107,14 @@
             >
           </div>
 
-          <!-- カテゴリピル（正式名称フル表示・動的生成） -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-[10px] font-semibold text-slate-400 tracking-wider">カテゴリ</span>
-              <button type="button" onclick="openSettingsModal()" class="text-[10px] text-slate-500 hover:text-slate-900 underline">項目を編集</button>
+              <button type="button" onclick="openSettingsModal('categories')" class="text-[10px] text-slate-500 hover:text-slate-900 underline">項目を編集</button>
             </div>
-            <div id="quickCatGroup" class="flex flex-wrap gap-1.5 text-[11px]">
-              <!-- JSでカテゴリボタンを生成 -->
-            </div>
+            <div id="quickCatGroup" class="flex flex-wrap gap-1.5 text-[11px]"></div>
           </div>
 
-          <!-- 期日プリセット & カレンダー -->
           <div>
             <div class="text-[10px] font-semibold text-slate-400 mb-1.5 tracking-wider">期日指定</div>
             <div class="flex items-center space-x-1.5">
@@ -141,7 +131,6 @@
             </div>
           </div>
 
-          <!-- 登録実行ボタン -->
           <button
             type="submit"
             class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-semibold py-3 rounded-lg text-sm shadow-sm transition-all flex items-center justify-center space-x-1.5"
@@ -157,10 +146,7 @@
 
     <!-- ==================== ページ2: タスク一覧 ＆ 絞り込み ==================== -->
     <section class="page-view flex flex-col bg-slate-50">
-      
-      <!-- フィルターエリア -->
       <div class="bg-white border-b border-slate-200 px-3.5 pt-2.5 pb-3 space-y-2.5 sticky top-0 z-10">
-        <!-- 期間フィルター -->
         <div class="flex space-x-1.5 overflow-x-auto no-scrollbar text-xs">
           <button class="f-date-btn px-3 py-1 rounded-md font-semibold bg-slate-900 text-white" data-date="all">すべて</button>
           <button class="f-date-btn px-3 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-date="today">今日</button>
@@ -169,18 +155,11 @@
           <button class="f-date-btn px-3 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-date="month">今月</button>
         </div>
 
-        <!-- カテゴリフィルター（動的生成） -->
-        <div id="filterCatGroup" class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
-          <!-- JSでフィルターボタンを生成 -->
-        </div>
+        <div id="filterCatGroup" class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]"></div>
       </div>
 
-      <!-- 一覧リスト -->
-      <div id="fullTaskList" class="p-3.5 space-y-2 flex-1 overflow-y-auto pb-20">
-        <!-- JSで全件描画 -->
-      </div>
+      <div id="fullTaskList" class="p-3.5 space-y-2 flex-1 overflow-y-auto pb-20"></div>
 
-      <!-- 下部アクションバー -->
       <div class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between">
         <label class="flex items-center space-x-2 text-xs text-slate-600 cursor-pointer">
           <input type="checkbox" id="showCompletedCheck" onchange="renderAll()" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900">
@@ -197,9 +176,9 @@
 
   </div>
 
-  <!-- ==================== 設定モーダル（カテゴリ追加・削除管理） ==================== -->
+  <!-- ==================== 設定モーダル（通知設定 & カテゴリ管理） ==================== -->
   <div id="settingsModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-[1px]">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85dvh]">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88dvh]">
       
       <!-- モーダルヘッダー -->
       <div class="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
@@ -217,59 +196,157 @@
         </button>
       </div>
 
-      <!-- モーダル本体 -->
-      <div class="p-4 overflow-y-auto space-y-5">
-        
-        <!-- 新規カテゴリ追加フォーム -->
-        <div>
-          <h3 class="text-xs font-bold text-slate-700 mb-2">タスク項目の種類を追加</h3>
-          <form id="addCategoryForm" class="space-y-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <div class="flex space-x-2">
-              <input
-                type="text"
-                id="newCatLabel"
-                placeholder="項目名（例: 学習・読書、買い物）"
-                maxlength="14"
-                required
-                class="flex-1 text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 outline-none"
-              >
-              <button
-                type="submit"
-                class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shrink-0 transition-colors"
-              >
-                追加
-              </button>
-            </div>
-            <!-- カラー選択 -->
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[10px] font-medium text-slate-500">ラベルカラー</span>
-              <div id="colorPickerGroup" class="flex space-x-2">
-                <!-- JSでカラー選択ボタンを生成 -->
-              </div>
-            </div>
-          </form>
-        </div>
-
-        <!-- 登録済みカテゴリ一覧（削除可能） -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-bold text-slate-700">現在のタスク項目一覧</h3>
-            <button type="button" onclick="resetDefaultCategories()" class="text-[10px] text-slate-400 hover:text-slate-700 underline">
-              初期設定に戻す
-            </button>
-          </div>
-          <div id="settingsCategoryList" class="space-y-1.5">
-            <!-- JSで一覧描画 -->
-          </div>
-        </div>
-
+      <!-- 設定タブ切り替え -->
+      <div class="grid grid-cols-2 border-b border-slate-200 text-xs font-semibold bg-white">
+        <button id="setTabNotify" onclick="switchSettingsTab('notify')" class="py-2.5 border-b-2 border-slate-900 text-slate-900 flex items-center justify-center space-x-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span>通知</span>
+        </button>
+        <button id="setTabCategories" onclick="switchSettingsTab('categories')" class="py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-700 flex items-center justify-center space-x-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <span>タスク項目</span>
+        </button>
       </div>
 
-      <!-- モーダルフッター -->
-      <div class="px-4 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
-        <button onclick="closeSettingsModal()" class="bg-slate-900 text-white text-xs font-semibold px-5 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-          完了
-        </button>
+      <!-- モーダル本体 -->
+      <div class="p-4 overflow-y-auto flex-1">
+
+        <!-- タブ1: 通知設定パネル -->
+        <div id="settingsPanelNotify" class="space-y-4">
+          <!-- 自動通知 ON / OFF -->
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+            <div>
+              <div class="text-xs font-bold text-slate-800">LINE定時通知</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">指定時刻きっかりにリマインダーを送信</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifyEnabled" class="sr-only peer" onchange="updateNotifyPreview()">
+              <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+            </label>
+          </div>
+
+          <div id="notifyDetailControls" class="space-y-4 transition-opacity">
+            <!-- 配信頻度 -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">配信頻度</label>
+              <div class="grid grid-cols-2 gap-1.5 text-xs">
+                <button type="button" data-freq="daily" onclick="selectNotifyFreq('daily')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
+                  毎日
+                </button>
+                <button type="button" data-freq="weekdays" onclick="selectNotifyFreq('weekdays')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
+                  平日のみ（月〜金）
+                </button>
+                <button type="button" data-freq="every_2_days" onclick="selectNotifyFreq('every_2_days')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
+                  隔日（2日おき）
+                </button>
+                <button type="button" data-freq="weekly_mon" onclick="selectNotifyFreq('weekly_mon')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
+                  週1回（毎週月曜）
+                </button>
+              </div>
+            </div>
+
+            <!-- 通知時刻（時刻きっかり：時・分指定） -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-bold text-slate-700">通知時刻（指定時刻きっかり）</label>
+                <span class="text-[10px] font-mono text-slate-400">JST / 1分単位精度</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <span class="block text-[10px] text-slate-400 mb-1">時</span>
+                  <select id="notifyHour" onchange="updateNotifyPreview()" class="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-800 focus:border-slate-900 outline-none font-mono">
+                    <!-- JSで00時〜23時を生成 -->
+                  </select>
+                </div>
+                <div>
+                  <span class="block text-[10px] text-slate-400 mb-1">分</span>
+                  <select id="notifyMinute" onchange="updateNotifyPreview()" class="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-800 focus:border-slate-900 outline-none font-mono">
+                    <option value="0">00分（きっかり）</option>
+                    <option value="5">05分</option>
+                    <option value="10">10分</option>
+                    <option value="15">15分</option>
+                    <option value="20">20分</option>
+                    <option value="25">25分</option>
+                    <option value="30">30分</option>
+                    <option value="35">35分</option>
+                    <option value="40">40分</option>
+                    <option value="45">45分</option>
+                    <option value="50">50分</option>
+                    <option value="55">55分</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 通知対象タスクの範囲 -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">通知に含めるタスク範囲</label>
+              <select id="notifyScope" onchange="updateNotifyPreview()" class="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-800 focus:border-slate-900 outline-none">
+                <option value="today_only">今日が期日のタスク（期限超過含む）</option>
+                <option value="today_tomorrow">今日・明日が期日のタスク</option>
+                <option value="all_active">未完了のすべてのタスク</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 現在の設定サマリー -->
+          <div class="p-3 bg-slate-900 text-white rounded-xl text-xs space-y-1">
+            <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">配信スケジュールプレビュー</div>
+            <div id="notifySummaryText" class="font-medium leading-relaxed">毎日 07:00 きっかりに配信</div>
+          </div>
+
+          <button
+            type="button"
+            onclick="saveNotificationSettings()"
+            class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-semibold py-2.5 rounded-lg transition-all"
+          >
+            通知設定を保存して同期
+          </button>
+        </div>
+
+        <!-- タブ2: カテゴリ管理パネル -->
+        <div id="settingsPanelCategories" class="hidden space-y-5">
+          <div>
+            <h3 class="text-xs font-bold text-slate-700 mb-2">タスク項目の種類を追加</h3>
+            <form id="addCategoryForm" class="space-y-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="newCatLabel"
+                  placeholder="項目名（例: 学習・読書、買い物）"
+                  maxlength="14"
+                  required
+                  class="flex-1 text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 outline-none"
+                >
+                <button
+                  type="submit"
+                  class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shrink-0 transition-colors"
+                >
+                  追加
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[10px] font-medium text-slate-500">ラベルカラー</span>
+                <div id="colorPickerGroup" class="flex space-x-2"></div>
+              </div>
+            </form>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold text-slate-700">現在のタスク項目一覧</h3>
+              <button type="button" onclick="resetDefaultCategories()" class="text-[10px] text-slate-400 hover:text-slate-700 underline">
+                初期設定に戻す
+              </button>
+            </div>
+            <div id="settingsCategoryList" class="space-y-1.5"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -282,59 +359,15 @@
   <script>
     const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby3qmDEvkXcEFCTtmLjyWNVuO3j-BhD9DmIW2E680l4CZosTQMianATfxUI2A4ldQ0Xew/exec";
 
-    // カラーパレット定義（マスターガイド準拠・落ち着いたトーン）
     const COLOR_THEMES = {
-      blue: {
-        name: "ブルー",
-        swatch: "bg-blue-600",
-        cardBg: "bg-blue-50/70 border-blue-200/90",
-        accentBar: "bg-blue-600",
-        badge: "bg-blue-100 text-blue-800",
-        btnActive: "bg-blue-600 text-white border-blue-600"
-      },
-      emerald: {
-        name: "エメラルド",
-        swatch: "bg-emerald-600",
-        cardBg: "bg-emerald-50/70 border-emerald-200/90",
-        accentBar: "bg-emerald-600",
-        badge: "bg-emerald-100 text-emerald-800",
-        btnActive: "bg-emerald-600 text-white border-emerald-600"
-      },
-      amber: {
-        name: "アンバー",
-        swatch: "bg-amber-500",
-        cardBg: "bg-amber-50/70 border-amber-200/90",
-        accentBar: "bg-amber-500",
-        badge: "bg-amber-100 text-amber-800",
-        btnActive: "bg-amber-500 text-white border-amber-500"
-      },
-      indigo: {
-        name: "インディゴ",
-        swatch: "bg-indigo-600",
-        cardBg: "bg-indigo-50/70 border-indigo-200/90",
-        accentBar: "bg-indigo-600",
-        badge: "bg-indigo-100 text-indigo-800",
-        btnActive: "bg-indigo-600 text-white border-indigo-600"
-      },
-      rose: {
-        name: "ローズ",
-        swatch: "bg-rose-600",
-        cardBg: "bg-rose-50/70 border-rose-200/90",
-        accentBar: "bg-rose-600",
-        badge: "bg-rose-100 text-rose-800",
-        btnActive: "bg-rose-600 text-white border-rose-600"
-      },
-      slate: {
-        name: "スレート",
-        swatch: "bg-slate-600",
-        cardBg: "bg-slate-100/90 border-slate-300/90",
-        accentBar: "bg-slate-600",
-        badge: "bg-slate-200 text-slate-700",
-        btnActive: "bg-slate-700 text-white border-slate-700"
-      }
+      blue: { name: "ブルー", swatch: "bg-blue-600", cardBg: "bg-blue-50/70 border-blue-200/90", accentBar: "bg-blue-600", badge: "bg-blue-100 text-blue-800", btnActive: "bg-blue-600 text-white border-blue-600" },
+      emerald: { name: "エメラルド", swatch: "bg-emerald-600", cardBg: "bg-emerald-50/70 border-emerald-200/90", accentBar: "bg-emerald-600", badge: "bg-emerald-100 text-emerald-800", btnActive: "bg-emerald-600 text-white border-emerald-600" },
+      amber: { name: "アンバー", swatch: "bg-amber-500", cardBg: "bg-amber-50/70 border-amber-200/90", accentBar: "bg-amber-500", badge: "bg-amber-100 text-amber-800", btnActive: "bg-amber-500 text-white border-amber-500" },
+      indigo: { name: "インディゴ", swatch: "bg-indigo-600", cardBg: "bg-indigo-50/70 border-indigo-200/90", accentBar: "bg-indigo-600", badge: "bg-indigo-100 text-indigo-800", btnActive: "bg-indigo-600 text-white border-indigo-600" },
+      rose: { name: "ローズ", swatch: "bg-rose-600", cardBg: "bg-rose-50/70 border-rose-200/90", accentBar: "bg-rose-600", badge: "bg-rose-100 text-rose-800", btnActive: "bg-rose-600 text-white border-rose-600" },
+      slate: { name: "スレート", swatch: "bg-slate-600", cardBg: "bg-slate-100/90 border-slate-300/90", accentBar: "bg-slate-600", badge: "bg-slate-200 text-slate-700", btnActive: "bg-slate-700 text-white border-slate-700" }
     };
 
-    // デフォルトカテゴリ（正式名称5項目に統一）
     const DEFAULT_CATEGORIES = [
       { id: "work_task", label: "仕事タスク", color: "blue" },
       { id: "life_task", label: "生活タスク", color: "emerald" },
@@ -343,21 +376,31 @@
       { id: "yomoyama", label: "よもやま", color: "slate" }
     ];
 
-    // カテゴリ読み込み（旧短縮名のまま保存されていた場合は正式名称へ自動マイグレーション）
     let categories = JSON.parse(localStorage.getItem('taskflow_categories_v3') || 'null');
     if (!Array.isArray(categories) || categories.length === 0) {
       categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
       localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
     }
 
+    // 通知設定（時・分きっかり指定）
+    const DEFAULT_NOTIFY_SETTINGS = {
+      enabled: true,
+      frequency: 'daily',
+      hour: 7,
+      minute: 0,
+      scope: 'today_tomorrow'
+    };
+
+    let notifySettings = Object.assign(
+      {},
+      DEFAULT_NOTIFY_SETTINGS,
+      JSON.parse(localStorage.getItem('taskflow_notify_v3') || '{}')
+    );
+
     function saveCategories() {
       localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
-      if (!categories.some(c => c.id === selectedQuickCat)) {
-        selectedQuickCat = categories[0].id;
-      }
-      if (filterCat !== 'all' && !categories.some(c => c.id === filterCat)) {
-        filterCat = 'all';
-      }
+      if (!categories.some(c => c.id === selectedQuickCat)) selectedQuickCat = categories[0].id;
+      if (filterCat !== 'all' && !categories.some(c => c.id === filterCat)) filterCat = 'all';
       renderCategoryControls();
       renderSettingsCategoryList();
       renderAll();
@@ -365,19 +408,10 @@
 
     function getCategoryInfo(catId) {
       const found = categories.find(c => c.id === catId);
-      if (found) {
-        return {
-          label: found.label,
-          theme: COLOR_THEMES[found.color] || COLOR_THEMES.slate
-        };
-      }
-      return {
-        label: catId || "未分類",
-        theme: COLOR_THEMES.slate
-      };
+      if (found) return { label: found.label, theme: COLOR_THEMES[found.color] || COLOR_THEMES.slate };
+      return { label: catId || "未分類", theme: COLOR_THEMES.slate };
     }
 
-    // タスクデータ初期化
     let tasks = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
     if (tasks.length === 0) {
       const today = getDateOffsetString(0);
@@ -417,7 +451,6 @@
       return `${Number(parts[1])}/${Number(parts[2])}`;
     }
 
-    // ページ切り替え
     window.switchPage = function(pageIndex) {
       currentPage = pageIndex;
       const wrapper = document.getElementById('swipeWrapper');
@@ -437,7 +470,6 @@
       }
     };
 
-    // スワイプジェスチャー判定
     let touchStartX = 0;
     let touchStartY = 0;
     document.addEventListener('touchstart', e => {
@@ -456,7 +488,6 @@
       }
     }, { passive: true });
 
-    // カテゴリ選択UI・フィルターUIの動的生成
     function renderCategoryControls() {
       const quickGroup = document.getElementById('quickCatGroup');
       quickGroup.innerHTML = categories.map(cat => {
@@ -497,10 +528,28 @@
       renderFullList();
     };
 
-    // 設定モーダル制御
-    window.openSettingsModal = function() {
+    // 設定モーダル・通知UI初期化
+    function initNotifyHourOptions() {
+      const hourSelect = document.getElementById('notifyHour');
+      let options = '';
+      for (let h = 0; h < 24; h++) {
+        options += `<option value="${h}">${String(h).padStart(2, '0')}時</option>`;
+      }
+      hourSelect.innerHTML = options;
+    }
+
+    window.openSettingsModal = function(tabName = 'notify') {
+      initNotifyHourOptions();
+      document.getElementById('notifyEnabled').checked = notifySettings.enabled;
+      document.getElementById('notifyHour').value = String(notifySettings.hour);
+      document.getElementById('notifyMinute').value = String(notifySettings.minute || 0);
+      document.getElementById('notifyScope').value = notifySettings.scope;
+      selectNotifyFreq(notifySettings.frequency, false);
+
       renderColorPicker();
       renderSettingsCategoryList();
+      switchSettingsTab(tabName);
+
       const modal = document.getElementById('settingsModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -510,6 +559,83 @@
       const modal = document.getElementById('settingsModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+    };
+
+    window.switchSettingsTab = function(tabName) {
+      const tabNotify = document.getElementById('setTabNotify');
+      const tabCat = document.getElementById('setTabCategories');
+      const panelNotify = document.getElementById('settingsPanelNotify');
+      const panelCat = document.getElementById('settingsPanelCategories');
+
+      if (tabName === 'notify') {
+        tabNotify.className = 'py-2.5 border-b-2 border-slate-900 text-slate-900 flex items-center justify-center space-x-1.5';
+        tabCat.className = 'py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-700 flex items-center justify-center space-x-1.5';
+        panelNotify.classList.remove('hidden');
+        panelCat.classList.add('hidden');
+      } else {
+        tabCat.className = 'py-2.5 border-b-2 border-slate-900 text-slate-900 flex items-center justify-center space-x-1.5';
+        tabNotify.className = 'py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-700 flex items-center justify-center space-x-1.5';
+        panelCat.classList.remove('hidden');
+        panelNotify.classList.add('hidden');
+      }
+    };
+
+    let tempNotifyFreq = notifySettings.frequency;
+
+    window.selectNotifyFreq = function(freq, triggerPreview = true) {
+      tempNotifyFreq = freq;
+      document.querySelectorAll('.n-freq-btn').forEach(btn => {
+        if (btn.dataset.freq === freq) {
+          btn.className = 'n-freq-btn py-2 px-3 rounded-lg border border-slate-900 bg-slate-900 text-white font-semibold text-left transition-all';
+        } else {
+          btn.className = 'n-freq-btn py-2 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium text-left hover:bg-slate-50 transition-all';
+        }
+      });
+      if (triggerPreview) updateNotifyPreview();
+    };
+
+    window.updateNotifyPreview = function() {
+      const enabled = document.getElementById('notifyEnabled').checked;
+      const detailBox = document.getElementById('notifyDetailControls');
+      const summaryEl = document.getElementById('notifySummaryText');
+
+      if (!enabled) {
+        detailBox.classList.add('opacity-40', 'pointer-events-none');
+        summaryEl.textContent = 'LINE定時通知は現在オフになっています';
+        return;
+      }
+
+      detailBox.classList.remove('opacity-40', 'pointer-events-none');
+      const hour = String(document.getElementById('notifyHour').value).padStart(2, '0');
+      const minute = String(document.getElementById('notifyMinute').value).padStart(2, '0');
+      const scope = document.getElementById('notifyScope').value;
+
+      const freqMap = {
+        daily: '毎日',
+        weekdays: '平日のみ（月〜金）',
+        every_2_days: '隔日（2日おき）',
+        weekly_mon: '毎週月曜日'
+      };
+      const scopeMap = {
+        today_only: '今日が期日のタスク',
+        today_tomorrow: '今日・明日が期日のタスク',
+        all_active: '未完了のすべてのタスク'
+      };
+
+      summaryEl.textContent = `${freqMap[tempNotifyFreq]} ${hour}:${minute} きっかりに「${scopeMap[scope]}」をLINEへ送信`;
+    };
+
+    window.saveNotificationSettings = function() {
+      notifySettings = {
+        enabled: document.getElementById('notifyEnabled').checked,
+        frequency: tempNotifyFreq,
+        hour: Number(document.getElementById('notifyHour').value),
+        minute: Number(document.getElementById('notifyMinute').value),
+        scope: document.getElementById('notifyScope').value
+      };
+      localStorage.setItem('taskflow_notify_v3', JSON.stringify(notifySettings));
+      closeSettingsModal();
+      saveAndSync('通知設定を保存・同期しました');
     };
 
     function renderColorPicker() {
@@ -548,7 +674,6 @@
               <button
                 type="button"
                 onclick="deleteCategory('${cat.id}')"
-                title="項目を削除"
                 class="text-slate-400 hover:text-rose-600 p-1 rounded transition-colors flex items-center space-x-1 text-[11px]"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -567,18 +692,11 @@
       const input = document.getElementById('newCatLabel');
       const label = input.value.trim();
       if (!label) return;
-
       if (categories.some(c => c.label === label)) {
         showToast('同じ名前の項目が既にあります');
         return;
       }
-
-      const newId = 'cat_' + Date.now();
-      categories.push({
-        id: newId,
-        label: label,
-        color: selectedNewCatColor
-      });
+      categories.push({ id: 'cat_' + Date.now(), label: label, color: selectedNewCatColor });
       input.value = '';
       saveCategories();
       showToast('タスク項目を追加しました');
@@ -588,9 +706,7 @@
       if (categories.length <= 1) return;
       categories = categories.filter(c => c.id !== catId);
       const fallbackId = categories[0].id;
-      tasks.forEach(t => {
-        if (t.category === catId) t.category = fallbackId;
-      });
+      tasks.forEach(t => { if (t.category === catId) t.category = fallbackId; });
       saveCategories();
       saveAndSync('タスク項目を削除しました');
     };
@@ -601,7 +717,6 @@
       showToast('項目を初期設定に戻しました');
     };
 
-    // 優先度ソート（終了日が近い順 かつ 作成日が新しい順）
     function getTop8PriorityTasks() {
       const active = tasks.filter(t => !t.completed);
       return active.sort((a, b) => {
@@ -754,7 +869,11 @@
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'syncAll', tasks: payloadTasks })
+          body: JSON.stringify({
+            action: 'syncAll',
+            tasks: payloadTasks,
+            notificationSettings: notifySettings
+          })
         }).then(() => {
           dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
           txt.textContent = '同期済み';
@@ -789,12 +908,10 @@
       saveAndSync('タスクを削除しました');
     };
 
-    // クイック期日セット
     window.setQuickDate = function(offsetDays) {
       document.getElementById('quickDueDate').value = getDateOffsetString(offsetDays);
     };
 
-    // 新規登録フォーム送信
     document.getElementById('quickForm').addEventListener('submit', e => {
       e.preventDefault();
       const titleInput = document.getElementById('quickTitle');
@@ -815,7 +932,6 @@
       saveAndSync('タスクを登録しました');
     });
 
-    // 一覧ページの期間フィルター制御
     document.querySelectorAll('.f-date-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.f-date-btn').forEach(b => {
@@ -827,7 +943,6 @@
       });
     });
 
-    // LINE共有ボタン（絵文字なしフォーマット）
     document.getElementById('shareLineBtn').addEventListener('click', () => {
       const active = tasks.filter(t => !t.completed);
       if (active.length === 0) {
@@ -842,7 +957,6 @@
       window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg.trim())}`, '_blank');
     });
 
-    // 初期描画
     document.getElementById('quickDueDate').value = getDateOffsetString(0);
     renderCategoryControls();
     renderAll();
