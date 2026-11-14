@@ -40,9 +40,26 @@
         <span class="text-[10px] font-mono font-semibold text-slate-400">3.0</span>
       </div>
     </div>
-    <div class="flex items-center space-x-1.5 text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">
-      <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-      <span id="syncText">同期済み</span>
+
+    <div class="flex items-center space-x-2">
+      <!-- 同期ステータス -->
+      <div class="flex items-center space-x-1.5 text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">
+        <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span id="syncText">同期済み</span>
+      </div>
+
+      <!-- 設定アイコンボタン（SVGベクター） -->
+      <button
+        onclick="openSettingsModal()"
+        title="設定"
+        aria-label="設定を開く"
+        class="w-8 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 active:scale-95 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -77,7 +94,7 @@
           <span class="text-[10px] text-slate-400">期日順 / 左スワイプで全件表示</span>
         </div>
 
-        <div id="priorityGrid" class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 min-h-[270px] max-h-[340px]">
+        <div id="priorityGrid" class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 min-h-[260px] max-h-[340px]">
           <!-- JSで8枠を描画 -->
         </div>
       </div>
@@ -96,15 +113,14 @@
             >
           </div>
 
-          <!-- カテゴリピル -->
+          <!-- カテゴリピル（正式名称フル表示・動的生成） -->
           <div>
-            <div class="text-[10px] font-semibold text-slate-400 mb-1.5 tracking-wider">カテゴリ</div>
-            <div id="quickCatGroup" class="grid grid-cols-5 gap-1.5 text-[11px]">
-              <button type="button" data-cat="work_task" class="q-cat-btn py-1.5 rounded-md font-semibold bg-blue-600 text-white border border-blue-600 transition-all">仕事</button>
-              <button type="button" data-cat="life_task" class="q-cat-btn py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 transition-all">生活</button>
-              <button type="button" data-cat="home_knowledge" class="q-cat-btn py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 transition-all">家ナレッジ</button>
-              <button type="button" data-cat="work_knowledge" class="q-cat-btn py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 transition-all">仕ナレッジ</button>
-              <button type="button" data-cat="yomoyama" class="q-cat-btn py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 transition-all">よもやま</button>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-semibold text-slate-400 tracking-wider">カテゴリ</span>
+              <button type="button" onclick="openSettingsModal()" class="text-[10px] text-slate-500 hover:text-slate-900 underline">項目を編集</button>
+            </div>
+            <div id="quickCatGroup" class="flex flex-wrap gap-1.5 text-[11px]">
+              <!-- JSでカテゴリボタンを生成 -->
             </div>
           </div>
 
@@ -153,14 +169,9 @@
           <button class="f-date-btn px-3 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-date="month">今月</button>
         </div>
 
-        <!-- カテゴリフィルター -->
-        <div class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-semibold bg-slate-700 text-white" data-cat="all">全カテゴリ</button>
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-cat="work_task">仕事タスク</button>
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-cat="life_task">生活タスク</button>
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-cat="home_knowledge">家庭ナレッジ</button>
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-cat="work_knowledge">仕事ナレッジ</button>
-          <button class="f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600" data-cat="yomoyama">よもやま</button>
+        <!-- カテゴリフィルター（動的生成） -->
+        <div id="filterCatGroup" class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
+          <!-- JSでフィルターボタンを生成 -->
         </div>
       </div>
 
@@ -186,45 +197,136 @@
 
   </div>
 
+  <!-- ==================== 設定モーダル（カテゴリ追加・削除管理） ==================== -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-[1px]">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85dvh]">
+      
+      <!-- モーダルヘッダー -->
+      <div class="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <h2 class="text-sm font-bold text-slate-900">アプリケーション設定</h2>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-800 p-1 rounded-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- モーダル本体 -->
+      <div class="p-4 overflow-y-auto space-y-5">
+        
+        <!-- 新規カテゴリ追加フォーム -->
+        <div>
+          <h3 class="text-xs font-bold text-slate-700 mb-2">タスク項目の種類を追加</h3>
+          <form id="addCategoryForm" class="space-y-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <div class="flex space-x-2">
+              <input
+                type="text"
+                id="newCatLabel"
+                placeholder="項目名（例: 学習・読書、買い物）"
+                maxlength="14"
+                required
+                class="flex-1 text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 outline-none"
+              >
+              <button
+                type="submit"
+                class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shrink-0 transition-colors"
+              >
+                追加
+              </button>
+            </div>
+            <!-- カラー選択 -->
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[10px] font-medium text-slate-500">ラベルカラー</span>
+              <div id="colorPickerGroup" class="flex space-x-2">
+                <!-- JSでカラー選択ボタンを生成 -->
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- 登録済みカテゴリ一覧（削除可能） -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold text-slate-700">現在のタスク項目一覧</h3>
+            <button type="button" onclick="resetDefaultCategories()" class="text-[10px] text-slate-400 hover:text-slate-700 underline">
+              初期設定に戻す
+            </button>
+          </div>
+          <div id="settingsCategoryList" class="space-y-1.5">
+            <!-- JSで一覧描画 -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- モーダルフッター -->
+      <div class="px-4 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <button onclick="closeSettingsModal()" class="bg-slate-900 text-white text-xs font-semibold px-5 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          完了
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- トースト通知 -->
   <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-2 rounded-md shadow-lg opacity-0 pointer-events-none transition-opacity duration-200">
-    登録しました
+    完了しました
   </div>
 
   <script>
     const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby3qmDEvkXcEFCTtmLjyWNVuO3j-BhD9DmIW2E680l4CZosTQMianATfxUI2A4ldQ0Xew/exec";
 
-    const CATEGORY_STYLES = {
-      work_task: {
-        label: "仕事タスク",
+    // カラーパレット定義（マスターガイド準拠・落ち着いたトーン）
+    const COLOR_THEMES = {
+      blue: {
+        name: "ブルー",
+        swatch: "bg-blue-600",
         cardBg: "bg-blue-50/70 border-blue-200/90",
         accentBar: "bg-blue-600",
         badge: "bg-blue-100 text-blue-800",
         btnActive: "bg-blue-600 text-white border-blue-600"
       },
-      life_task: {
-        label: "生活タスク",
+      emerald: {
+        name: "エメラルド",
+        swatch: "bg-emerald-600",
         cardBg: "bg-emerald-50/70 border-emerald-200/90",
         accentBar: "bg-emerald-600",
         badge: "bg-emerald-100 text-emerald-800",
         btnActive: "bg-emerald-600 text-white border-emerald-600"
       },
-      home_knowledge: {
-        label: "家庭ナレッジ",
+      amber: {
+        name: "アンバー",
+        swatch: "bg-amber-500",
         cardBg: "bg-amber-50/70 border-amber-200/90",
         accentBar: "bg-amber-500",
         badge: "bg-amber-100 text-amber-800",
         btnActive: "bg-amber-500 text-white border-amber-500"
       },
-      work_knowledge: {
-        label: "仕事ナレッジ",
+      indigo: {
+        name: "インディゴ",
+        swatch: "bg-indigo-600",
         cardBg: "bg-indigo-50/70 border-indigo-200/90",
         accentBar: "bg-indigo-600",
         badge: "bg-indigo-100 text-indigo-800",
         btnActive: "bg-indigo-600 text-white border-indigo-600"
       },
-      yomoyama: {
-        label: "よもやま",
+      rose: {
+        name: "ローズ",
+        swatch: "bg-rose-600",
+        cardBg: "bg-rose-50/70 border-rose-200/90",
+        accentBar: "bg-rose-600",
+        badge: "bg-rose-100 text-rose-800",
+        btnActive: "bg-rose-600 text-white border-rose-600"
+      },
+      slate: {
+        name: "スレート",
+        swatch: "bg-slate-600",
         cardBg: "bg-slate-100/90 border-slate-300/90",
         accentBar: "bg-slate-600",
         badge: "bg-slate-200 text-slate-700",
@@ -232,6 +334,50 @@
       }
     };
 
+    // デフォルトカテゴリ（正式名称5項目に統一）
+    const DEFAULT_CATEGORIES = [
+      { id: "work_task", label: "仕事タスク", color: "blue" },
+      { id: "life_task", label: "生活タスク", color: "emerald" },
+      { id: "work_knowledge", label: "仕事ナレッジ", color: "indigo" },
+      { id: "home_knowledge", label: "家庭ナレッジ", color: "amber" },
+      { id: "yomoyama", label: "よもやま", color: "slate" }
+    ];
+
+    // カテゴリ読み込み（旧短縮名のまま保存されていた場合は正式名称へ自動マイグレーション）
+    let categories = JSON.parse(localStorage.getItem('taskflow_categories_v3') || 'null');
+    if (!Array.isArray(categories) || categories.length === 0) {
+      categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
+    }
+
+    function saveCategories() {
+      localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
+      if (!categories.some(c => c.id === selectedQuickCat)) {
+        selectedQuickCat = categories[0].id;
+      }
+      if (filterCat !== 'all' && !categories.some(c => c.id === filterCat)) {
+        filterCat = 'all';
+      }
+      renderCategoryControls();
+      renderSettingsCategoryList();
+      renderAll();
+    }
+
+    function getCategoryInfo(catId) {
+      const found = categories.find(c => c.id === catId);
+      if (found) {
+        return {
+          label: found.label,
+          theme: COLOR_THEMES[found.color] || COLOR_THEMES.slate
+        };
+      }
+      return {
+        label: catId || "未分類",
+        theme: COLOR_THEMES.slate
+      };
+    }
+
+    // タスクデータ初期化
     let tasks = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
     if (tasks.length === 0) {
       const today = getDateOffsetString(0);
@@ -241,14 +387,15 @@
         { id: 't1', title: '週次定例のアジェンダ作成', category: 'work_task', dueDate: today, completed: false, createdAt: today },
         { id: 't2', title: '洗剤とキッチンペーパー購入', category: 'life_task', dueDate: today, completed: false, createdAt: today },
         { id: 't3', title: 'クライアント見積書の最終確認', category: 'work_task', dueDate: tomorrow, completed: false, createdAt: today },
-        { id: 't4', title: 'エアコンフィルターの掃除', category: 'home_knowledge', dueDate: day3, completed: false, createdAt: today },
-        { id: 't5', title: 'GAS連携仕様のメモ整理', category: 'work_knowledge', dueDate: day3, completed: false, createdAt: today }
+        { id: 't4', title: 'GAS連携仕様のメモ整理', category: 'work_knowledge', dueDate: day3, completed: false, createdAt: today },
+        { id: 't5', title: 'エアコンフィルターの掃除', category: 'home_knowledge', dueDate: day3, completed: false, createdAt: today }
       ];
       localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
     }
 
     let currentPage = 0;
-    let selectedQuickCat = 'work_task';
+    let selectedQuickCat = categories[0].id;
+    let selectedNewCatColor = 'blue';
     let filterDate = 'all';
     let filterCat = 'all';
     let syncTimeout = null;
@@ -294,11 +441,13 @@
     let touchStartX = 0;
     let touchStartY = 0;
     document.addEventListener('touchstart', e => {
+      if (!document.getElementById('settingsModal').classList.contains('hidden')) return;
       touchStartX = e.changedTouches[0].screenX;
       touchStartY = e.changedTouches[0].screenY;
     }, { passive: true });
 
     document.addEventListener('touchend', e => {
+      if (!document.getElementById('settingsModal').classList.contains('hidden')) return;
       const dx = e.changedTouches[0].screenX - touchStartX;
       const dy = e.changedTouches[0].screenY - touchStartY;
       if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
@@ -306,6 +455,151 @@
         if (dx > 0 && currentPage === 1) switchPage(0);
       }
     }, { passive: true });
+
+    // カテゴリ選択UI・フィルターUIの動的生成
+    function renderCategoryControls() {
+      const quickGroup = document.getElementById('quickCatGroup');
+      quickGroup.innerHTML = categories.map(cat => {
+        const isSelected = cat.id === selectedQuickCat;
+        const theme = COLOR_THEMES[cat.color] || COLOR_THEMES.slate;
+        const btnClass = isSelected
+          ? `px-3 py-1.5 rounded-md font-semibold border transition-all ${theme.btnActive}`
+          : `px-3 py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all`;
+        return `<button type="button" onclick="selectQuickCategory('${cat.id}')" class="${btnClass}">${escapeHtml(cat.label)}</button>`;
+      }).join('');
+
+      const filterGroup = document.getElementById('filterCatGroup');
+      const allActive = filterCat === 'all';
+      let filterHtml = `
+        <button onclick="selectFilterCategory('all')" class="px-2.5 py-1 rounded-md shrink-0 ${allActive ? 'font-semibold bg-slate-700 text-white' : 'font-medium bg-slate-100 text-slate-600'}">
+          全カテゴリ
+        </button>
+      `;
+      filterHtml += categories.map(cat => {
+        const active = filterCat === cat.id;
+        return `
+          <button onclick="selectFilterCategory('${cat.id}')" class="px-2.5 py-1 rounded-md shrink-0 ${active ? 'font-semibold bg-slate-700 text-white' : 'font-medium bg-slate-100 text-slate-600'}">
+            ${escapeHtml(cat.label)}
+          </button>
+        `;
+      }).join('');
+      filterGroup.innerHTML = filterHtml;
+    }
+
+    window.selectQuickCategory = function(catId) {
+      selectedQuickCat = catId;
+      renderCategoryControls();
+    };
+
+    window.selectFilterCategory = function(catId) {
+      filterCat = catId;
+      renderCategoryControls();
+      renderFullList();
+    };
+
+    // 設定モーダル制御
+    window.openSettingsModal = function() {
+      renderColorPicker();
+      renderSettingsCategoryList();
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    window.closeSettingsModal = function() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    function renderColorPicker() {
+      const container = document.getElementById('colorPickerGroup');
+      container.innerHTML = Object.keys(COLOR_THEMES).map(key => {
+        const theme = COLOR_THEMES[key];
+        const isSelected = key === selectedNewCatColor;
+        return `
+          <button
+            type="button"
+            onclick="selectNewCatColor('${key}')"
+            title="${theme.name}"
+            class="w-5 h-5 rounded-full ${theme.swatch} ${isSelected ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'opacity-70 hover:opacity-100'} transition-all"
+          ></button>
+        `;
+      }).join('');
+    }
+
+    window.selectNewCatColor = function(colorKey) {
+      selectedNewCatColor = colorKey;
+      renderColorPicker();
+    };
+
+    function renderSettingsCategoryList() {
+      const list = document.getElementById('settingsCategoryList');
+      list.innerHTML = categories.map(cat => {
+        const theme = COLOR_THEMES[cat.color] || COLOR_THEMES.slate;
+        const canDelete = categories.length > 1;
+        return `
+          <div class="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg">
+            <div class="flex items-center space-x-2.5">
+              <span class="w-2.5 h-2.5 rounded-full ${theme.swatch}"></span>
+              <span class="text-xs font-semibold text-slate-800">${escapeHtml(cat.label)}</span>
+            </div>
+            ${canDelete ? `
+              <button
+                type="button"
+                onclick="deleteCategory('${cat.id}')"
+                title="項目を削除"
+                class="text-slate-400 hover:text-rose-600 p-1 rounded transition-colors flex items-center space-x-1 text-[11px]"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>削除</span>
+              </button>
+            ` : `<span class="text-[10px] text-slate-400">必須</span>`}
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('addCategoryForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('newCatLabel');
+      const label = input.value.trim();
+      if (!label) return;
+
+      if (categories.some(c => c.label === label)) {
+        showToast('同じ名前の項目が既にあります');
+        return;
+      }
+
+      const newId = 'cat_' + Date.now();
+      categories.push({
+        id: newId,
+        label: label,
+        color: selectedNewCatColor
+      });
+      input.value = '';
+      saveCategories();
+      showToast('タスク項目を追加しました');
+    });
+
+    window.deleteCategory = function(catId) {
+      if (categories.length <= 1) return;
+      categories = categories.filter(c => c.id !== catId);
+      const fallbackId = categories[0].id;
+      tasks.forEach(t => {
+        if (t.category === catId) t.category = fallbackId;
+      });
+      saveCategories();
+      saveAndSync('タスク項目を削除しました');
+    };
+
+    window.resetDefaultCategories = function() {
+      categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      saveCategories();
+      showToast('項目を初期設定に戻しました');
+    };
 
     // 優先度ソート（終了日が近い順 かつ 作成日が新しい順）
     function getTop8PriorityTasks() {
@@ -327,7 +621,8 @@
       for (let i = 0; i < 8; i++) {
         const task = top8[i];
         if (task) {
-          const style = CATEGORY_STYLES[task.category] || CATEGORY_STYLES.yomoyama;
+          const catInfo = getCategoryInfo(task.category);
+          const style = catInfo.theme;
           const dateLabel = formatShortDate(task.dueDate);
           const isUrgent = task.dueDate && task.dueDate <= today;
           html += `
@@ -339,7 +634,7 @@
                   <span class="text-[9px] font-bold px-1.5 py-0.2 rounded ${isUrgent ? 'bg-rose-600 text-white' : style.badge}">
                     ${dateLabel}
                   </span>
-                  <span class="text-[9px] text-slate-500 truncate">${style.label}</span>
+                  <span class="text-[9px] text-slate-500 truncate">${escapeHtml(catInfo.label)}</span>
                 </div>
               </div>
               <button
@@ -401,7 +696,8 @@
       }
 
       listEl.innerHTML = filtered.map(task => {
-        const style = CATEGORY_STYLES[task.category] || CATEGORY_STYLES.yomoyama;
+        const catInfo = getCategoryInfo(task.category);
+        const style = catInfo.theme;
         return `
           <div class="relative overflow-hidden flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 shadow-sm ${task.completed ? 'opacity-50 bg-slate-50' : ''}">
             <div class="absolute left-0 top-0 bottom-0 w-1 ${style.accentBar}"></div>
@@ -417,7 +713,7 @@
                   ${escapeHtml(task.title)}
                 </div>
                 <div class="flex items-center space-x-2 mt-1 text-[10px]">
-                  <span class="px-1.5 py-0.5 rounded font-semibold ${style.badge}">${style.label}</span>
+                  <span class="px-1.5 py-0.5 rounded font-semibold ${style.badge}">${escapeHtml(catInfo.label)}</span>
                   ${task.dueDate ? `<span class="text-slate-500 font-mono">期日: ${task.dueDate}</span>` : ''}
                 </div>
               </div>
@@ -448,12 +744,17 @@
       dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
       txt.textContent = '同期中...';
 
+      const payloadTasks = tasks.map(t => ({
+        ...t,
+        categoryLabel: getCategoryInfo(t.category).label
+      }));
+
       syncTimeout = setTimeout(() => {
         fetch(GAS_WEBAPP_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'syncAll', tasks: tasks })
+          body: JSON.stringify({ action: 'syncAll', tasks: payloadTasks })
         }).then(() => {
           dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
           txt.textContent = '同期済み';
@@ -472,7 +773,7 @@
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+      return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
 
     window.toggleComplete = function(id) {
@@ -487,18 +788,6 @@
       tasks = tasks.filter(item => item.id !== id);
       saveAndSync('タスクを削除しました');
     };
-
-    // クイック入力カテゴリ選択
-    document.querySelectorAll('.q-cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectedQuickCat = btn.dataset.cat;
-        document.querySelectorAll('.q-cat-btn').forEach(b => {
-          b.className = 'q-cat-btn py-1.5 rounded-md font-medium bg-slate-50 text-slate-600 border border-slate-200 transition-all';
-        });
-        const style = CATEGORY_STYLES[selectedQuickCat];
-        btn.className = `q-cat-btn py-1.5 rounded-md font-semibold border transition-all ${style.btnActive}`;
-      });
-    });
 
     // クイック期日セット
     window.setQuickDate = function(offsetDays) {
@@ -526,7 +815,7 @@
       saveAndSync('タスクを登録しました');
     });
 
-    // 一覧ページのフィルター制御
+    // 一覧ページの期間フィルター制御
     document.querySelectorAll('.f-date-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.f-date-btn').forEach(b => {
@@ -538,18 +827,7 @@
       });
     });
 
-    document.querySelectorAll('.f-cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.f-cat-btn').forEach(b => {
-          b.className = 'f-cat-btn px-2.5 py-1 rounded-md font-medium bg-slate-100 text-slate-600';
-        });
-        btn.className = 'f-cat-btn px-2.5 py-1 rounded-md font-semibold bg-slate-700 text-white';
-        filterCat = btn.dataset.cat;
-        renderFullList();
-      });
-    });
-
-    // LINE共有ボタン
+    // LINE共有ボタン（絵文字なしフォーマット）
     document.getElementById('shareLineBtn').addEventListener('click', () => {
       const active = tasks.filter(t => !t.completed);
       if (active.length === 0) {
@@ -558,14 +836,15 @@
       }
       let msg = '【TaskFlow 3.0 タスク一覧】\n';
       active.forEach(t => {
-        const cat = (CATEGORY_STYLES[t.category] || CATEGORY_STYLES.yomoyama).label;
+        const cat = getCategoryInfo(t.category).label;
         msg += `・[${cat}] ${t.title}${t.dueDate ? ` (${t.dueDate})` : ''}\n`;
       });
       window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg.trim())}`, '_blank');
     });
 
-    // 初期日付を今日に設定して描画
+    // 初期描画
     document.getElementById('quickDueDate').value = getDateOffsetString(0);
+    renderCategoryControls();
     renderAll();
   </script>
 </body>
