@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TaskFlow 3.1</title>
+  <title>TaskFlow 3.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="theme-color" content="#020617">
   <style>
@@ -33,6 +33,9 @@
       filter: invert(1) opacity(0.7);
       cursor: pointer;
     }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased overflow-hidden select-none">
@@ -43,11 +46,21 @@
       <div class="w-6 h-6 rounded bg-slate-100 text-slate-950 flex items-center justify-center text-[10px] font-bold tracking-widest">TF</div>
       <div class="flex items-baseline space-x-1.5">
         <h1 class="text-sm font-bold text-slate-100 tracking-tight">TaskFlow</h1>
-        <span class="text-[10px] font-mono font-semibold text-slate-400">3.1</span>
+        <span class="text-[10px] font-mono font-semibold text-slate-400">3.2</span>
       </div>
     </div>
 
     <div class="flex items-center space-x-2">
+      <!-- バックグラウンド稼働中タイマーバッジ -->
+      <button
+        id="miniTimerBadge"
+        onclick="reopenFocusTimer()"
+        class="hidden items-center space-x-1.5 text-[11px] font-mono font-semibold text-amber-400 bg-amber-950/70 hover:bg-amber-900/70 px-2.5 py-1 rounded-full border border-amber-500/40 transition-colors"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="miniTimerText">15:00</span>
+      </button>
+
       <!-- 同期ステータス -->
       <div class="flex items-center space-x-1.5 text-[11px] font-medium text-slate-300 bg-slate-800/90 px-2.5 py-1 rounded-full border border-slate-700/80">
         <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -97,7 +110,7 @@
       <div class="p-3.5 flex-1 flex flex-col justify-start">
         <div class="flex items-center justify-between mb-2 px-0.5">
           <span class="text-[11px] font-semibold text-slate-400 tracking-wide uppercase">直近・優先タスク（最大8件）</span>
-          <span class="text-[10px] text-slate-500">期日順 / 左スワイプで全件・検索</span>
+          <span class="text-[10px] text-slate-500">カードタップで集中タイマー起動</span>
         </div>
 
         <div id="priorityGrid" class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 min-h-[250px] max-h-[330px]"></div>
@@ -117,7 +130,7 @@
             >
           </div>
 
-          <!-- カテゴリピル（正式名称フル表示・動的生成） -->
+          <!-- カテゴリピル -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <span class="text-[10px] font-semibold text-slate-400 tracking-wider">カテゴリ</span>
@@ -269,11 +282,158 @@
 
   </div>
 
+  <!-- ==================== フォーカス・ポモドーロタイマー画面（全画面オーバーレイ） ==================== -->
+  <div id="focusTimerOverlay" class="fixed inset-0 z-50 hidden flex-col justify-between bg-black text-slate-100">
+    
+    <!-- 上部ナビゲーションバー（左：戻る / 右：5分単位時間変更タブ） -->
+    <div class="h-14 px-4 flex items-center justify-between border-b border-zinc-900">
+      <button
+        type="button"
+        onclick="minimizeFocusTimer()"
+        class="flex items-center space-x-1 text-amber-500 hover:text-amber-400 text-sm font-medium py-1.5 pr-2 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>タスク一覧</span>
+      </button>
+
+      <!-- 右上タブ：5分単位で時間変更 -->
+      <div class="relative flex items-center">
+        <select
+          id="timerDurationSelect"
+          onchange="changeTimerDuration(this.value)"
+          aria-label="タイマー時間を選択（5分単位）"
+          class="appearance-none bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-amber-400 text-xs font-semibold rounded-full pl-3.5 pr-7 py-1.5 outline-none focus:border-amber-500 transition-colors cursor-pointer"
+        >
+          <option value="5">5分</option>
+          <option value="10">10分</option>
+          <option value="15" selected>15分</option>
+          <option value="20">20分</option>
+          <option value="25">25分（ポモドーロ）</option>
+          <option value="30">30分</option>
+          <option value="35">35分</option>
+          <option value="40">40分</option>
+          <option value="45">45分</option>
+          <option value="50">50分</option>
+          <option value="55">55分</option>
+          <option value="60">60分</option>
+        </select>
+        <svg class="w-3.5 h-3.5 text-amber-400 absolute right-2.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- 中央：円形プログレスリング ＆ タスク名・カウントダウン表示 -->
+    <div class="flex-1 flex flex-col items-center justify-center px-6">
+      <div class="relative w-[308px] h-[308px] sm:w-[336px] sm:h-[336px] flex items-center justify-center">
+        
+        <!-- SVG円形プログレスバー -->
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 320 320">
+          <!-- 背景トラック -->
+          <circle
+            cx="160"
+            cy="160"
+            r="146"
+            fill="none"
+            stroke="#18181b"
+            stroke-width="8"
+          />
+          <!-- 残り時間リング（アンバーゴールド） -->
+          <circle
+            id="timerProgressRing"
+            cx="160"
+            cy="160"
+            r="146"
+            fill="none"
+            stroke="#f59e0b"
+            stroke-width="8"
+            stroke-linecap="round"
+            stroke-dasharray="917.345"
+            stroke-dashoffset="0"
+            style="transition: stroke-dashoffset 0.35s linear, stroke 0.3s ease;"
+          />
+        </svg>
+
+        <!-- リング中央のコンテンツ（終了時刻・カウントダウン・タスク名） -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center px-9 text-center">
+          <!-- 終了予定時刻（ベルSVG＋時刻） -->
+          <div class="flex items-center space-x-1.5 text-zinc-400 text-xs font-medium mb-1">
+            <svg class="w-3.5 h-3.5 text-zinc-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+            </svg>
+            <span id="timerEndClock" class="tabular-nums font-mono">16:42</span>
+          </div>
+
+          <!-- デジタルカウントダウン -->
+          <div id="timerDigitalDisplay" class="text-[54px] sm:text-[60px] font-extralight tracking-tight text-white tabular-nums leading-none my-1">
+            15:00
+          </div>
+
+          <!-- 対象タスク名（中央に浮かび上がるフォーカスラベル） -->
+          <div class="mt-2.5 w-full">
+            <div id="timerCategoryPill" class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 mb-1">
+              仕事タスク
+            </div>
+            <div id="timerTaskTitle" class="text-sm sm:text-base font-semibold text-amber-300/95 line-clamp-2 leading-snug">
+              タスク名
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 左右の丸型コントロールボタン（iOS標準タイマー風配置） -->
+      <div class="w-full max-w-[336px] flex items-center justify-between mt-4 px-1">
+        <button
+          type="button"
+          onclick="cancelFocusTimer()"
+          class="w-[74px] h-[74px] rounded-full bg-zinc-900 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-zinc-300 text-xs font-medium flex items-center justify-center transition-all"
+        >
+          キャンセル
+        </button>
+
+        <button
+          type="button"
+          id="timerToggleBtn"
+          onclick="toggleTimerPauseResume()"
+          class="w-[74px] h-[74px] rounded-full bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 border border-amber-500/40 text-amber-400 text-xs font-semibold flex items-center justify-center transition-all"
+        >
+          一時停止
+        </button>
+      </div>
+    </div>
+
+    <!-- 下部情報カード ＆ タスク完了アクション -->
+    <div class="px-5 pb-8 pt-2 max-w-md w-full mx-auto space-y-3">
+      <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-2xl divide-y divide-zinc-800/80 text-xs">
+        <div class="px-4 py-3 flex items-center justify-between">
+          <span class="text-zinc-400">ラベル</span>
+          <span id="timerBottomLabel" class="text-zinc-200 font-medium truncate max-w-[200px]">集中セッション</span>
+        </div>
+        <div class="px-4 py-3 flex items-center justify-between">
+          <span class="text-zinc-400">タイマー終了時</span>
+          <span class="text-zinc-300 font-medium">チャイム通知</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onclick="completeActiveTimerTask()"
+        class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white text-xs font-bold tracking-wide shadow-lg transition-all flex items-center justify-center space-x-2"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>このタスクを完了にする</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ==================== 設定モーダル（通知設定 & カテゴリ管理） ==================== -->
   <div id="settingsModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/70 backdrop-blur-[2px]">
     <div class="bg-slate-900 w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[88dvh]">
       
-      <!-- モーダルヘッダー -->
       <div class="px-4 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div class="flex items-center space-x-2">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -289,7 +449,6 @@
         </button>
       </div>
 
-      <!-- 設定タブ切り替え -->
       <div class="grid grid-cols-2 border-b border-slate-800 text-xs font-semibold bg-slate-900">
         <button id="setTabNotify" onclick="switchSettingsTab('notify')" class="py-2.5 border-b-2 border-slate-100 text-slate-100 flex items-center justify-center space-x-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -305,10 +464,7 @@
         </button>
       </div>
 
-      <!-- モーダル本体 -->
       <div class="p-4 overflow-y-auto flex-1">
-
-        <!-- タブ1: 通知設定パネル -->
         <div id="settingsPanelNotify" class="space-y-4">
           <div class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800">
             <div>
@@ -325,18 +481,10 @@
             <div>
               <label class="block text-xs font-bold text-slate-300 mb-1.5">配信頻度</label>
               <div class="grid grid-cols-2 gap-1.5 text-xs">
-                <button type="button" data-freq="daily" onclick="selectNotifyFreq('daily')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
-                  毎日
-                </button>
-                <button type="button" data-freq="weekdays" onclick="selectNotifyFreq('weekdays')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
-                  平日のみ（月〜金）
-                </button>
-                <button type="button" data-freq="every_2_days" onclick="selectNotifyFreq('every_2_days')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
-                  隔日（2日おき）
-                </button>
-                <button type="button" data-freq="weekly_mon" onclick="selectNotifyFreq('weekly_mon')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">
-                  週1回（毎週月曜）
-                </button>
+                <button type="button" data-freq="daily" onclick="selectNotifyFreq('daily')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">毎日</button>
+                <button type="button" data-freq="weekdays" onclick="selectNotifyFreq('weekdays')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">平日のみ（月〜金）</button>
+                <button type="button" data-freq="every_2_days" onclick="selectNotifyFreq('every_2_days')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">隔日（2日おき）</button>
+                <button type="button" data-freq="weekly_mon" onclick="selectNotifyFreq('weekly_mon')" class="n-freq-btn py-2 px-3 rounded-lg border font-medium text-left transition-all">週1回（毎週月曜）</button>
               </div>
             </div>
 
@@ -385,16 +533,11 @@
             <div id="notifySummaryText" class="font-medium leading-relaxed text-slate-200">毎日 07:00 きっかりに配信</div>
           </div>
 
-          <button
-            type="button"
-            onclick="saveNotificationSettings()"
-            class="w-full bg-slate-100 hover:bg-white active:scale-[0.99] text-slate-950 text-xs font-bold py-2.5 rounded-lg transition-all"
-          >
+          <button type="button" onclick="saveNotificationSettings()" class="w-full bg-slate-100 hover:bg-white active:scale-[0.99] text-slate-950 text-xs font-bold py-2.5 rounded-lg transition-all">
             通知設定を保存して同期
           </button>
         </div>
 
-        <!-- タブ2: カテゴリ管理パネル -->
         <div id="settingsPanelCategories" class="hidden space-y-5">
           <div>
             <h3 class="text-xs font-bold text-slate-300 mb-2">タスク項目の種類を追加</h3>
@@ -408,10 +551,7 @@
                   required
                   class="flex-1 text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-slate-400 outline-none"
                 >
-                <button
-                  type="submit"
-                  class="bg-slate-100 hover:bg-white text-slate-950 text-xs font-bold px-3.5 py-2 rounded-lg shrink-0 transition-colors"
-                >
+                <button type="submit" class="bg-slate-100 hover:bg-white text-slate-950 text-xs font-bold px-3.5 py-2 rounded-lg shrink-0 transition-colors">
                   追加
                 </button>
               </div>
@@ -432,77 +572,28 @@
             <div id="settingsCategoryList" class="space-y-1.5"></div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- トースト通知 -->
-  <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-100 text-slate-950 text-xs font-bold px-4 py-2 rounded-md shadow-xl opacity-0 pointer-events-none transition-opacity duration-200">
+  <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[60] bg-slate-100 text-slate-950 text-xs font-bold px-4 py-2 rounded-md shadow-xl opacity-0 pointer-events-none transition-opacity duration-200">
     完了しました
   </div>
 
   <script>
     const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby3qmDEvkXcEFCTtmLjyWNVuO3j-BhD9DmIW2E680l4CZosTQMianATfxUI2A4ldQ0Xew/exec";
 
-    // ダークモード専用カラーパレット
     const COLOR_THEMES = {
-      blue: {
-        name: "ブルー",
-        swatch: "bg-blue-500",
-        cardBg: "bg-blue-950/35 border-blue-800/60",
-        accentBar: "bg-blue-500",
-        badge: "bg-blue-950 text-blue-300 border border-blue-800/70",
-        btnActive: "bg-blue-600 text-white border-blue-500"
-      },
-      emerald: {
-        name: "エメラルド",
-        swatch: "bg-emerald-500",
-        cardBg: "bg-emerald-950/35 border-emerald-800/60",
-        accentBar: "bg-emerald-500",
-        badge: "bg-emerald-950 text-emerald-300 border border-emerald-800/70",
-        btnActive: "bg-emerald-600 text-white border-emerald-500"
-      },
-      amber: {
-        name: "アンバー",
-        swatch: "bg-amber-500",
-        cardBg: "bg-amber-950/35 border-amber-800/60",
-        accentBar: "bg-amber-500",
-        badge: "bg-amber-950 text-amber-300 border border-amber-800/70",
-        btnActive: "bg-amber-600 text-white border-amber-500"
-      },
-      indigo: {
-        name: "インディゴ",
-        swatch: "bg-indigo-500",
-        cardBg: "bg-indigo-950/35 border-indigo-800/60",
-        accentBar: "bg-indigo-500",
-        badge: "bg-indigo-950 text-indigo-300 border border-indigo-800/70",
-        btnActive: "bg-indigo-600 text-white border-indigo-500"
-      },
-      rose: {
-        name: "ローズ",
-        swatch: "bg-rose-500",
-        cardBg: "bg-rose-950/35 border-rose-800/60",
-        accentBar: "bg-rose-500",
-        badge: "bg-rose-950 text-rose-300 border border-rose-800/70",
-        btnActive: "bg-rose-600 text-white border-rose-500"
-      },
-      slate: {
-        name: "スレート",
-        swatch: "bg-slate-400",
-        cardBg: "bg-slate-900/90 border-slate-700/80",
-        accentBar: "bg-slate-400",
-        badge: "bg-slate-800 text-slate-300 border border-slate-700",
-        btnActive: "bg-slate-600 text-white border-slate-500"
-      }
+      blue: { name: "ブルー", swatch: "bg-blue-500", cardBg: "bg-blue-950/35 border-blue-800/60", accentBar: "bg-blue-500", badge: "bg-blue-950 text-blue-300 border border-blue-800/70", btnActive: "bg-blue-600 text-white border-blue-500" },
+      emerald: { name: "エメラルド", swatch: "bg-emerald-500", cardBg: "bg-emerald-950/35 border-emerald-800/60", accentBar: "bg-emerald-500", badge: "bg-emerald-950 text-emerald-300 border border-emerald-800/70", btnActive: "bg-emerald-600 text-white border-emerald-500" },
+      amber: { name: "アンバー", swatch: "bg-amber-500", cardBg: "bg-amber-950/35 border-amber-800/60", accentBar: "bg-amber-500", badge: "bg-amber-950 text-amber-300 border border-amber-800/70", btnActive: "bg-amber-600 text-white border-amber-500" },
+      indigo: { name: "インディゴ", swatch: "bg-indigo-500", cardBg: "bg-indigo-950/35 border-indigo-800/60", accentBar: "bg-indigo-500", badge: "bg-indigo-950 text-indigo-300 border border-indigo-800/70", btnActive: "bg-indigo-600 text-white border-indigo-500" },
+      rose: { name: "ローズ", swatch: "bg-rose-500", cardBg: "bg-rose-950/35 border-rose-800/60", accentBar: "bg-rose-500", badge: "bg-rose-950 text-rose-300 border border-rose-800/70", btnActive: "bg-rose-600 text-white border-rose-500" },
+      slate: { name: "スレート", swatch: "bg-slate-400", cardBg: "bg-slate-900/90 border-slate-700/80", accentBar: "bg-slate-400", badge: "bg-slate-800 text-slate-300 border border-slate-700", btnActive: "bg-slate-600 text-white border-slate-500" }
     };
 
-    const REPEAT_LABELS = {
-      none: '',
-      daily: '毎日',
-      weekly: '毎週',
-      monthly: '毎月'
-    };
+    const REPEAT_LABELS = { none: '', daily: '毎日', weekly: '毎週', monthly: '毎月' };
 
     const DEFAULT_CATEGORIES = [
       { id: "work_task", label: "仕事タスク", color: "blue" },
@@ -518,19 +609,8 @@
       localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
     }
 
-    const DEFAULT_NOTIFY_SETTINGS = {
-      enabled: true,
-      frequency: 'daily',
-      hour: 7,
-      minute: 0,
-      scope: 'today_tomorrow'
-    };
-
-    let notifySettings = Object.assign(
-      {},
-      DEFAULT_NOTIFY_SETTINGS,
-      JSON.parse(localStorage.getItem('taskflow_notify_v3') || '{}')
-    );
+    const DEFAULT_NOTIFY_SETTINGS = { enabled: true, frequency: 'daily', hour: 7, minute: 0, scope: 'today_tomorrow' };
+    let notifySettings = Object.assign({}, DEFAULT_NOTIFY_SETTINGS, JSON.parse(localStorage.getItem('taskflow_notify_v3') || '{}'));
 
     function saveCategories() {
       localStorage.setItem('taskflow_categories_v3', JSON.stringify(categories));
@@ -553,50 +633,10 @@
       const tomorrow = getDateOffsetString(1);
       const day3 = getDateOffsetString(3);
       tasks = [
-        {
-          id: 't1',
-          title: '週次定例のアジェンダ作成',
-          category: 'work_task',
-          dueDate: today,
-          completed: false,
-          createdAt: today,
-          repeat: 'weekly',
-          memo: '進捗サマリー・課題・来週の優先事項の3点に絞って整理する',
-          url: ''
-        },
-        {
-          id: 't2',
-          title: '洗剤とキッチンペーパー購入',
-          category: 'life_task',
-          dueDate: today,
-          completed: false,
-          createdAt: today,
-          repeat: 'none',
-          memo: '',
-          url: ''
-        },
-        {
-          id: 't3',
-          title: 'GASとLINE連携の仕様メモ',
-          category: 'work_knowledge',
-          dueDate: tomorrow,
-          completed: false,
-          createdAt: today,
-          repeat: 'none',
-          memo: 'ScriptApp.newTrigger().timeBased().at() で分単位の時刻指定が可能',
-          url: 'https://developers.google.com/apps-script/reference/script/clock-trigger-builder'
-        },
-        {
-          id: 't4',
-          title: 'エアコンフィルターの清掃',
-          category: 'home_knowledge',
-          dueDate: day3,
-          completed: false,
-          createdAt: today,
-          repeat: 'monthly',
-          memo: '毎月1回、掃除機でホコリを吸ってから水洗いして陰干しする',
-          url: ''
-        }
+        { id: 't1', title: '週次定例のアジェンダ作成', category: 'work_task', dueDate: today, completed: false, createdAt: today, repeat: 'weekly', memo: '進捗サマリー・課題・来週の優先事項の3点に絞って整理する', url: '' },
+        { id: 't2', title: '洗剤とキッチンペーパー購入', category: 'life_task', dueDate: today, completed: false, createdAt: today, repeat: 'none', memo: '', url: '' },
+        { id: 't3', title: 'GASとLINE連携の仕様メモ', category: 'work_knowledge', dueDate: tomorrow, completed: false, createdAt: today, repeat: 'none', memo: 'ScriptApp.newTrigger().timeBased().at() で分単位の時刻指定が可能', url: 'https://developers.google.com/apps-script/reference/script/clock-trigger-builder' },
+        { id: 't4', title: 'エアコンフィルターの清掃', category: 'home_knowledge', dueDate: day3, completed: false, createdAt: today, repeat: 'monthly', memo: '毎月1回、掃除機でホコリを吸ってから水洗いして陰干しする', url: '' }
       ];
       localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
     }
@@ -611,6 +651,201 @@
     let expandedTaskIds = new Set();
     let syncTimeout = null;
 
+    // ==================== ポモドーロ / フォーカスタイマー制御 ====================
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 146;
+    let timerState = {
+      taskId: null,
+      durationMinutes: 15,
+      totalSeconds: 15 * 60,
+      remainingSeconds: 15 * 60,
+      isRunning: false,
+      endTimestamp: null,
+      intervalId: null
+    };
+
+    function playGentleChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.16);
+          gain.gain.exponentialRampToValueAtTime(0.14, ctx.currentTime + idx * 0.16 + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.16 + 0.8);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.16);
+          osc.stop(ctx.currentTime + idx * 0.16 + 0.85);
+        });
+      } catch (e) {}
+    }
+
+    window.startFocusTimerForTask = function(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      if (timerState.intervalId) clearInterval(timerState.intervalId);
+
+      const mins = Number(document.getElementById('timerDurationSelect').value) || 15;
+      timerState.taskId = task.id;
+      timerState.durationMinutes = mins;
+      timerState.totalSeconds = mins * 60;
+      timerState.remainingSeconds = mins * 60;
+      timerState.isRunning = true;
+      timerState.endTimestamp = Date.now() + timerState.remainingSeconds * 1000;
+
+      const catInfo = getCategoryInfo(task.category);
+      document.getElementById('timerTaskTitle').textContent = task.title;
+      document.getElementById('timerBottomLabel').textContent = task.title;
+      document.getElementById('timerCategoryPill').textContent = catInfo.label;
+
+      const ring = document.getElementById('timerProgressRing');
+      ring.style.stroke = '#f59e0b';
+
+      updateTimerUI();
+      showFocusOverlay(true);
+      startTimerLoop();
+    };
+
+    window.changeTimerDuration = function(newMinsStr) {
+      const mins = Number(newMinsStr);
+      if (!mins) return;
+
+      if (timerState.intervalId) clearInterval(timerState.intervalId);
+      timerState.durationMinutes = mins;
+      timerState.totalSeconds = mins * 60;
+      timerState.remainingSeconds = mins * 60;
+      timerState.isRunning = true;
+      timerState.endTimestamp = Date.now() + timerState.remainingSeconds * 1000;
+
+      const ring = document.getElementById('timerProgressRing');
+      ring.style.stroke = '#f59e0b';
+
+      updateTimerUI();
+      startTimerLoop();
+      showToast(`タイマーを ${mins}分 に変更しました`);
+    };
+
+    function startTimerLoop() {
+      if (timerState.intervalId) clearInterval(timerState.intervalId);
+      timerState.intervalId = setInterval(() => {
+        if (!timerState.isRunning) return;
+        const diffMs = timerState.endTimestamp - Date.now();
+        const nextSec = Math.max(0, Math.ceil(diffMs / 1000));
+        timerState.remainingSeconds = nextSec;
+        updateTimerUI();
+
+        if (nextSec <= 0) {
+          clearInterval(timerState.intervalId);
+          timerState.intervalId = null;
+          timerState.isRunning = false;
+          playGentleChime();
+          document.getElementById('timerProgressRing').style.stroke = '#10b981';
+          document.getElementById('timerToggleBtn').textContent = '再スタート';
+          showToast('設定時間が終了しました');
+        }
+      }, 250);
+    }
+
+    function updateTimerUI() {
+      const sec = timerState.remainingSeconds;
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+      document.getElementById('timerDigitalDisplay').textContent = formatted;
+      document.getElementById('miniTimerText').textContent = formatted;
+
+      const ratio = timerState.totalSeconds > 0 ? (sec / timerState.totalSeconds) : 0;
+      const offset = RING_CIRCUMFERENCE * (1 - ratio);
+      document.getElementById('timerProgressRing').style.strokeDashoffset = String(offset);
+
+      const targetTime = timerState.isRunning && timerState.endTimestamp
+        ? new Date(timerState.endTimestamp)
+        : new Date(Date.now() + sec * 1000);
+      const endH = String(targetTime.getHours()).padStart(2, '0');
+      const endM = String(targetTime.getMinutes()).padStart(2, '0');
+      document.getElementById('timerEndClock').textContent = `${endH}:${endM}`;
+
+      const toggleBtn = document.getElementById('timerToggleBtn');
+      if (sec <= 0) {
+        toggleBtn.textContent = '再スタート';
+        toggleBtn.className = 'w-[74px] h-[74px] rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold flex items-center justify-center transition-all';
+      } else if (timerState.isRunning) {
+        toggleBtn.textContent = '一時停止';
+        toggleBtn.className = 'w-[74px] h-[74px] rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 text-xs font-semibold flex items-center justify-center transition-all';
+      } else {
+        toggleBtn.textContent = '再開';
+        toggleBtn.className = 'w-[74px] h-[74px] rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 text-xs font-semibold flex items-center justify-center transition-all';
+      }
+    }
+
+    window.toggleTimerPauseResume = function() {
+      if (timerState.remainingSeconds <= 0) {
+        changeTimerDuration(timerState.durationMinutes);
+        return;
+      }
+
+      if (timerState.isRunning) {
+        timerState.isRunning = false;
+        if (timerState.intervalId) clearInterval(timerState.intervalId);
+        updateTimerUI();
+      } else {
+        timerState.isRunning = true;
+        timerState.endTimestamp = Date.now() + timerState.remainingSeconds * 1000;
+        updateTimerUI();
+        startTimerLoop();
+      }
+    };
+
+    window.cancelFocusTimer = function() {
+      if (timerState.intervalId) clearInterval(timerState.intervalId);
+      timerState.isRunning = false;
+      timerState.taskId = null;
+      document.getElementById('miniTimerBadge').classList.add('hidden');
+      document.getElementById('miniTimerBadge').classList.remove('flex');
+      showFocusOverlay(false);
+    };
+
+    window.minimizeFocusTimer = function() {
+      showFocusOverlay(false);
+      if (timerState.taskId) {
+        const badge = document.getElementById('miniTimerBadge');
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+      }
+    };
+
+    window.reopenFocusTimer = function() {
+      if (!timerState.taskId) return;
+      showFocusOverlay(true);
+    };
+
+    function showFocusOverlay(visible) {
+      const overlay = document.getElementById('focusTimerOverlay');
+      if (visible) {
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+      } else {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+      }
+    }
+
+    window.completeActiveTimerTask = function() {
+      const targetId = timerState.taskId;
+      cancelFocusTimer();
+      if (targetId) {
+        playGentleChime();
+        toggleComplete(targetId);
+      }
+    };
+
+    // ==================== 基本ユーティリティ ====================
     function getDateOffsetString(offsetDays) {
       const d = new Date();
       d.setDate(d.getDate() + offsetDays);
@@ -619,13 +854,9 @@
 
     function calculateNextDueDate(baseDateStr, repeatType) {
       const base = baseDateStr ? new Date(baseDateStr + 'T00:00:00') : new Date();
-      if (repeatType === 'daily') {
-        base.setDate(base.getDate() + 1);
-      } else if (repeatType === 'weekly') {
-        base.setDate(base.getDate() + 7);
-      } else if (repeatType === 'monthly') {
-        base.setMonth(base.getMonth() + 1);
-      }
+      if (repeatType === 'daily') base.setDate(base.getDate() + 1);
+      else if (repeatType === 'weekly') base.setDate(base.getDate() + 7);
+      else if (repeatType === 'monthly') base.setMonth(base.getMonth() + 1);
       return `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, '0')}-${String(base.getDate()).padStart(2, '0')}`;
     }
 
@@ -663,12 +894,14 @@
     let touchStartY = 0;
     document.addEventListener('touchstart', e => {
       if (!document.getElementById('settingsModal').classList.contains('hidden')) return;
+      if (!document.getElementById('focusTimerOverlay').classList.contains('hidden')) return;
       touchStartX = e.changedTouches[0].screenX;
       touchStartY = e.changedTouches[0].screenY;
     }, { passive: true });
 
     document.addEventListener('touchend', e => {
       if (!document.getElementById('settingsModal').classList.contains('hidden')) return;
+      if (!document.getElementById('focusTimerOverlay').classList.contains('hidden')) return;
       const dx = e.changedTouches[0].screenX - touchStartX;
       const dy = e.changedTouches[0].screenY - touchStartY;
       if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
@@ -745,11 +978,8 @@
       const input = document.getElementById('searchKeywordInput');
       const clearBtn = document.getElementById('clearSearchBtn');
       searchKeyword = input.value.trim().toLowerCase();
-      if (searchKeyword.length > 0) {
-        clearBtn.classList.remove('hidden');
-      } else {
-        clearBtn.classList.add('hidden');
-      }
+      if (searchKeyword.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
       renderFullList();
     };
 
@@ -760,11 +990,8 @@
     };
 
     window.toggleTaskExpand = function(taskId) {
-      if (expandedTaskIds.has(taskId)) {
-        expandedTaskIds.delete(taskId);
-      } else {
-        expandedTaskIds.add(taskId);
-      }
+      if (expandedTaskIds.has(taskId)) expandedTaskIds.delete(taskId);
+      else expandedTaskIds.add(taskId);
       renderFullList();
     };
 
@@ -850,17 +1077,8 @@
       const minute = String(document.getElementById('notifyMinute').value).padStart(2, '0');
       const scope = document.getElementById('notifyScope').value;
 
-      const freqMap = {
-        daily: '毎日',
-        weekdays: '平日のみ（月〜金）',
-        every_2_days: '隔日（2日おき）',
-        weekly_mon: '毎週月曜日'
-      };
-      const scopeMap = {
-        today_only: '今日が期日のタスク',
-        today_tomorrow: '今日・明日が期日のタスク',
-        all_active: '未完了のすべてのタスク'
-      };
+      const freqMap = { daily: '毎日', weekdays: '平日のみ（月〜金）', every_2_days: '隔日（2日おき）', weekly_mon: '毎週月曜日' };
+      const scopeMap = { today_only: '今日が期日のタスク', today_tomorrow: '今日・明日が期日のタスク', all_active: '未完了のすべてのタスク' };
 
       summaryEl.textContent = `${freqMap[tempNotifyFreq]} ${hour}:${minute} きっかりに「${scopeMap[scope]}」をLINEへ送信`;
     };
@@ -911,11 +1129,7 @@
               <span class="text-xs font-semibold text-slate-200">${escapeHtml(cat.label)}</span>
             </div>
             ${canDelete ? `
-              <button
-                type="button"
-                onclick="deleteCategory('${cat.id}')"
-                class="text-slate-400 hover:text-rose-400 p-1 rounded transition-colors flex items-center space-x-1 text-[11px]"
-              >
+              <button type="button" onclick="deleteCategory('${cat.id}')" class="text-slate-400 hover:text-rose-400 p-1 rounded transition-colors flex items-center space-x-1 text-[11px]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -957,7 +1171,6 @@
       showToast('項目を初期設定に戻しました');
     };
 
-    // 優先度ソート（終了日が近い順 かつ 作成日が新しい順）
     function getTop8PriorityTasks() {
       const active = tasks.filter(t => !t.completed);
       return active.sort((a, b) => {
@@ -982,30 +1195,28 @@
           const dateLabel = formatShortDate(task.dueDate);
           const isUrgent = task.dueDate && task.dueDate <= today;
           const hasRepeat = task.repeat && task.repeat !== 'none';
-          const hasDetails = (task.memo && task.memo.trim()) || (task.url && task.url.trim());
 
           html += `
-            <div class="relative overflow-hidden flex items-center justify-between px-2.5 py-1.5 rounded-lg border ${style.cardBg} transition-all">
+            <div class="relative overflow-hidden flex items-center justify-between px-2.5 py-1.5 rounded-lg border ${style.cardBg} hover:border-amber-500/60 transition-all group">
               <div class="absolute left-0 top-0 bottom-0 w-1 ${style.accentBar}"></div>
-              <div class="min-w-0 flex-1 pl-1 pr-1.5">
-                <div class="text-xs font-semibold text-slate-100 truncate leading-snug">${escapeHtml(task.title)}</div>
+              
+              <!-- カード本体タップで集中タイマー起動 -->
+              <div onclick="startFocusTimerForTask('${task.id}')" class="min-w-0 flex-1 pl-1 pr-1.5 cursor-pointer">
+                <div class="text-xs font-semibold text-slate-100 group-hover:text-amber-300 truncate leading-snug transition-colors">${escapeHtml(task.title)}</div>
                 <div class="flex items-center space-x-1 mt-0.5">
                   <span class="text-[9px] font-bold px-1.5 py-0.2 rounded ${isUrgent ? 'bg-rose-600 text-white' : style.badge}">
                     ${dateLabel}
                   </span>
                   <span class="text-[9px] text-slate-400 truncate">${escapeHtml(catInfo.label)}</span>
                   ${hasRepeat ? `
-                    <svg class="w-2.5 h-2.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" title="ルーティン">
+                    <svg class="w-2.5 h-2.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  ` : ''}
-                  ${hasDetails ? `
-                    <svg class="w-2.5 h-2.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" title="メモ・リンクあり">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   ` : ''}
                 </div>
               </div>
+
+              <!-- 完了チェックボタン -->
               <button
                 onclick="toggleComplete('${task.id}')"
                 title="完了にする"
@@ -1038,7 +1249,6 @@
         if (!showCompleted && t.completed) return false;
         if (filterCat !== 'all' && t.category !== filterCat) return false;
 
-        // キーワード横断検索（タイトル・詳細メモ・URL・カテゴリ名）
         if (searchKeyword) {
           const catLabel = getCategoryInfo(t.category).label.toLowerCase();
           const titleMatch = (t.title || '').toLowerCase().includes(searchKeyword);
@@ -1094,7 +1304,7 @@
                   class="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-800 text-slate-100 focus:ring-slate-400 cursor-pointer"
                 >
                 <div class="min-w-0 flex-1">
-                  <div class="text-sm font-medium ${task.completed ? 'line-through text-slate-500' : 'text-slate-100'} break-words">
+                  <div onclick="startFocusTimerForTask('${task.id}')" class="text-sm font-medium cursor-pointer hover:text-amber-300 transition-colors ${task.completed ? 'line-through text-slate-500' : 'text-slate-100'} break-words">
                     ${escapeHtml(task.title)}
                   </div>
 
@@ -1108,6 +1318,18 @@
                         </svg>
                         <span>${REPEAT_LABELS[task.repeat]}</span>
                       </span>
+                    ` : ''}
+                    ${!task.completed ? `
+                      <button
+                        type="button"
+                        onclick="startFocusTimerForTask('${task.id}')"
+                        class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-amber-950/60 hover:bg-amber-900/70 text-amber-300 border border-amber-700/60 transition-colors"
+                      >
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>集中タイマー</span>
+                      </button>
                     ` : ''}
                     ${hasDetails ? `
                       <button
@@ -1123,7 +1345,6 @@
                     ` : ''}
                   </div>
 
-                  <!-- 展開されたメモ・リンク詳細 -->
                   ${hasDetails && isExpanded ? `
                     <div class="mt-2.5 p-2.5 bg-slate-950 rounded-md border border-slate-800 space-y-2 text-xs">
                       ${task.memo ? `<p class="text-slate-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(task.memo)}</p>` : ''}
@@ -1208,7 +1429,6 @@
       return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
 
-    // 完了切り替え（ルーティンタスクの場合は次回タスクを自動生成）
     window.toggleComplete = function(id) {
       const t = tasks.find(item => item.id === id);
       if (!t) return;
@@ -1245,7 +1465,6 @@
       document.getElementById('quickDueDate').value = getDateOffsetString(offsetDays);
     };
 
-    // 新規登録フォーム送信
     document.getElementById('quickForm').addEventListener('submit', e => {
       e.preventDefault();
       const titleInput = document.getElementById('quickTitle');
@@ -1274,14 +1493,11 @@
       selectQuickRepeat('none');
 
       const detailsPanel = document.getElementById('quickDetailsPanel');
-      if (!detailsPanel.classList.contains('hidden')) {
-        toggleQuickDetails();
-      }
+      if (!detailsPanel.classList.contains('hidden')) toggleQuickDetails();
 
       saveAndSync('タスクを登録しました');
     });
 
-    // 期間フィルター制御
     document.querySelectorAll('.f-date-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.f-date-btn').forEach(b => {
@@ -1293,14 +1509,13 @@
       });
     });
 
-    // LINE共有ボタン（絵文字なしフォーマット）
     document.getElementById('shareLineBtn').addEventListener('click', () => {
       const active = tasks.filter(t => !t.completed);
       if (active.length === 0) {
         showToast('未完了のタスクはありません');
         return;
       }
-      let msg = '【TaskFlow 3.1 タスク一覧】\n';
+      let msg = '【TaskFlow 3.2 タスク一覧】\n';
       active.forEach(t => {
         const cat = getCategoryInfo(t.category).label;
         const rep = (t.repeat && t.repeat !== 'none') ? ` [${REPEAT_LABELS[t.repeat]}]` : '';
@@ -1309,7 +1524,6 @@
       window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg.trim())}`, '_blank');
     });
 
-    // 初期描画
     document.getElementById('quickDueDate').value = getDateOffsetString(0);
     renderCategoryControls();
     renderAll();
